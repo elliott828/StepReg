@@ -2,8 +2,8 @@
 # STEP 0.1
 # Download all related packages
 all.pcg <- c("rJava", "xlsxjars", "xts", "xlsx", 
-             "car","MASS","plyr","lmtest","zoo","stats", "plyr", "tidyr", "dplyr",
-             "lubridate", "ggplot2", "reshape", "Rcpp", "colorspace")
+             "car", "MASS","plyr","lmtest","zoo", "plyr", "tidyr", "dplyr",
+             "lubridate", "ggplot2", "Rcpp", "colorspace")
 
 req.pkg <- function(pkg){
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
@@ -15,9 +15,12 @@ req.pkg(all.pcg)
 # invisible(req.pkg(all.pcg))
 
 
+# STEP 0.2
+e <- new.env()
+
+
 
 StepReg() <- function{
-  
   
   # STEP 1.2
   # Read Data
@@ -56,12 +59,7 @@ StepReg() <- function{
   message('| "',data.name, '" is loaded.') 
   message('| There are ', dim(data)[1], ' observations and ', 
           dim(data)[2], ' variables in the raw dataset.\n')
-  
-  
-  ######################################
-  ## STEP 2 DATA CREATION & TRANSFORM ##
-  ######################################
-  
+    
   # STEP 2.1 choose the response variable
   repeat{
     resp <- readline("| Please enter the name of response variable: ")
@@ -101,6 +99,50 @@ StepReg() <- function{
     }
   }
   
+  # big loop start: What's the next move? 
+  repeat{
+    e$a_nm <<- question("2.2") # answer for the next move
+    if(e$a_nm == "1"){ # 1. Add a predictor
+      repeat{
+        e$pred <<- question("2.2.1", "add") # predictor name to add
+        repeat{
+          e$tm <<- question("2.2.1.1") # transformation method
+          recom(e$pred, e$resp, e$df1, e$a_tm) # output: e$op.recom, e$df.temp, e$fit.temp
+          repeat{
+            loop.output(e$fit.temp)
+            e$a_stsf <<- question("2.2.1.3") # answer for Satisfactory Question
+            if(e$a_stsf == "1"){ # change transformation prmt
+              e$op.recom <<- question("2.2.1.3.1") # vector, 4 elements
+              e$df.temp <<- modif(e$pred, e$op.recom, ...)
+              e$fit.temp <<- trial(e$fit1, )             
+            } else break # if(e$a_stsf %in% c("2", "3", "4")){ 
+          }
+          # if(e$a_stsf == "2"){ # change transformation method
+          if(e$a_stsf %in% c("3", "4")){
+            break
+          }    
+        }
+        # if(e$a_stsf == "3"){ # change a predictor
+        if(e$a_stsf == "4"){ # satisfied
+          e$df1 <<- e$df.temp
+          e$fit1 <<- e$fit.temp
+          break
+        }
+      }
+    } else if(e$a_nm == "2"){ # 2. Remove a predictor
+      e$pred <<- question("2.2.1", "rm") # predictor name to remove
+      e$fit.temp <<- trial(e$fit1, e$df1, e$pred, -1)
+      loop.output()
+      e$a_conf <<- question("2.2.2.2") # confirm the removal or not
+      if(e$a_conf == "Y"){
+        e$fit1 <<- e$fit.temp
+        e$df1[[e$pred]] <<- e$df[[e$pred]]
+      } # else if(e$a_conf == "N") do nothing
+    } else if(e$a_nm == "3"){ # 3. Stop modeling
+      final.output(e$fit1)
+      break
+    }
+  }
   
   
 }
