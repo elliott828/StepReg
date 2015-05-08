@@ -1,4 +1,4 @@
-
+rm(list = ls())
 # STEP 0.1
 # Download all related packages
 all.pcg <- c("rJava", "xlsxjars", "xts", "xlsx", 
@@ -1077,11 +1077,11 @@ final.output <- function(resp, data, fit, prmt, contri, aic = FALSE) {
 
 # STEP 0.5 
 # save original work directory for final recover
-wd_recover <- getwd()
+e$wd_recover <- getwd()
 
 # STEP 1
 # Structure Function: StepReg()
-StepReg() <- function{
+StepReg <- function(){
   # STEP 1.1
   # Welcome!
   cat("\n")
@@ -1172,7 +1172,7 @@ StepReg() <- function{
   # STEP 1.5
   # choose start row: e$st.row
   repeat{
-    st.row <- readline("Please enter the row number you want to start modeling: ")
+    st.row <- readline("| Please enter the row number you want to start modeling: ")
     cat("\n")
     if(all(strsplit(st.row, split = "")[[1]] %in% as.character(0:9))) {
       e$st.row <- as.numeric(st.row)
@@ -1185,10 +1185,10 @@ StepReg() <- function{
   # STEP 1.6 
   # rebuild the model if any model existed already
   repeat{
-    rec <- readline("Do you want to continue testing an existed model (Y/N)? ")
+    rec <- readline("| Do you want to continue testing an existed model (Y/N)? ")
     cat("\n")
     if (!toupper(rec) %in% c("Y","N")){
-      message("Please only enter Y or N!\n")
+      message("| Please only enter Y or N!\n")
     } else if (toupper(rec) == "Y"){
         rebuild(e$resp, e$data, e$st.row)
         loop.output(e$resp, e$df1, e$fit1, pred = NULL, e$tvar)
@@ -1270,7 +1270,7 @@ StepReg() <- function{
         e$fit1 <- e$fit.temp
         e$df0[[e$pred]] <- e$data[[e$pred]]
         e$df1 <- e$df0[e$st.row:nrow(e$df0), ]
-        e$prmt[which((e$prmt[[1]] == e$pred) & (e$prmt[[6]] == "alive"), 6] == "dead"
+        e$prmt[which((e$prmt[[1]] == e$pred) & (e$prmt[[6]] == "alive")), 6] == "dead"
       } # else if(e$a_conf == "N") do nothing
     } else if(e$a_nm == 3){ # 3. Stop modeling
       final.output(e$resp, e$df1, e$fit1, e$prmt, e$contri, questions(10))
@@ -1278,7 +1278,7 @@ StepReg() <- function{
     }
   }
 
-  setwd(wd_recover)
+  setwd(e$wd_recover)
   message("| Thank you for using StepReg tool! Goodbye! \n")
   
 } # end of function StepReg()
