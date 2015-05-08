@@ -380,6 +380,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
         break
       }
     }
+    return(opt)
   }
   
   # index = 2
@@ -403,6 +404,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
         }else break
       }
     }
+    return(pred.name)
   }
   
   # index = 3
@@ -425,6 +427,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
         break
       }
     }
+    return(opt)
   }
   
   # index = 4
@@ -446,6 +449,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
         break
       }
     }
+    return(satis)
   }
   
   # index = 5
@@ -466,6 +470,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
         break
       }
     }
+    return(opt)
   }
   
   # index = 7
@@ -525,6 +530,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
         message("| Only Y/y and N/n is acceptable!\n")
       }else break
     }
+    return(conf.remv)
   }
   
   # index = 10
