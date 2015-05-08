@@ -535,8 +535,12 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
       cat("\n")
       if(!toupper(stepaic) %in% c("Y","N")){
         message("| Only Y/y and N/n is acceptable!\n")
-      }else break
+      }else{
+        aic <- ifelse(stepaic == "Y", T, F)
+        break
+      } 
     }
+    return(aic)
   }
   
   L_index <- LETTERS[index]
