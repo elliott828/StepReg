@@ -457,13 +457,14 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
         break
       }
     }
+    return(opt)
   }
   
   # index = 2
   q2.2.1_2 <- function(df, coef, opt){
     # Question 2.2.1 / 2.2.2 "Indicate the predictor's name to be added to the model"
     # also applicable for question at step 2.2.2: 
-    # 	"Indicate the predictor's name to be removed from the model"
+    #   "Indicate the predictor's name to be removed from the model"
     repeat{
       pred.name <- readline("| Please indicate the name of predictor: ")
       cat("\n")
@@ -480,6 +481,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
         }else break
       }
     }
+    return(pred.name)
   }
   
   # index = 3
@@ -502,6 +504,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
         break
       }
     }
+    return(opt)
   }
   
   # index = 4
@@ -523,6 +526,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
         break
       }
     }
+    return(satis)
   }
   
   # index = 5
@@ -543,6 +547,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
         break
       }
     }
+    return(opt)
   }
   
   # index = 7
@@ -602,6 +607,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
         message("| Only Y/y and N/n is acceptable!\n")
       }else break
     }
+    return(conf.remv)
   }
   
   # index = 10
