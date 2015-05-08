@@ -326,49 +326,50 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
 # modif() #
 #---------#
 
-modif <- function(pred, type, data, co.r=NULL, sc.1=NULL, sc.2=NULL, pc.r=NULL){
+modif <- function(pred, data, tm.prmt){
   #---------------------------------
   # transform specified variable with(out) parameters
   # this function returns **a dataset** with selected variable transformed
   # make sure the raw data is already loaded into global environment
   #---------------------------------
   # pred: the name of variable to be transormed of class "character"
-  # type: transformation method:
-  #       0: no transformation
-  #       1~2 media: carryover + s-curve / carryover + power curve
-  #       the input for type should be strictly controlled to the list of option number above!!!
   # data: data frame to store the variable transformed (original var. will be covered)
+  # tm.prmt: transformation parameters
   #---------------------------------
   
   df <- data
+  co.r <- tm.prmt[1]
+  pc.r <- tm.prmt[2]
+  sc.1 <- tm.prmt[3]
+  sc.2 <- tm.prmt[4]
   
-  if(as.character(type) == "1"){
-    df[[pred]] <- cs(data[[pred]], co.r, sc.1, sc.2)
-  }else if(as.character(type) == "2"){
-    df[[pred]] <- cp(data[[pred]], co.r, pc.r)
-  }else if(as.character(type) == "0"){
+  if(co.r == NA){
     df[[pred]] <- data[[pred]]
+  }else if(pc.r == NA){
+    df[[pred]] <- cs(data[[pred]], co.r, sc.1, sc.2)
+  }else{
+    df[[pred]] <- cp(data[[pred]], co.r, pc.r)
   }
-  
   return(df)
 }
 
 #-------------#
 # questions() #
 #-------------#
-questions <- function(index, pred = NULL, df = NULL, coef = NULL){
+questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
   # index: number of question to be used
   # df: data frame, class - data.frame 
   # coef: fit$coef, class - data.frame
+  # opt: add a vriable to (1) or remove one (2) from the model
   
   # index = 1
   q2.2 <- function(){
     # Question 2.2 "What's next move?"
     repeat{
       cat("| What is the next move?",
-          "  1. Continue modelling & go select another predictor!",
-          "  2. Remove a predictor from the model.",
-          "  3. Stop! Show me the final model and the statistics!",
+          "|  1. Continue modelling & add a predictor!",
+          "|  2. Remove a predictor from the model.",
+          "|  3. Stop! Show me the final model and the statistics!",
           "", sep = "\n")
       opt <- readline("| Enter an option number please: ")
       cat("\n")
@@ -382,21 +383,23 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL){
   }
   
   # index = 2
-  q2.2.1_2 <- function(df, coef){
+  q2.2.1_2 <- function(df, coef, opt){
     # Question 2.2.1 / 2.2.2 "Indicate the predictor's name to be added to the model"
     # also applicable for question at step 2.2.2: 
     # 	"Indicate the predictor's name to be removed from the model"
     repeat{
       pred.name <- readline("| Please indicate the name of predictor: ")
       cat("\n")
-      if(is.null(coef)){
+      if(opt == 1){
         # Check if the predictor exists in the df 
         if(!pred.name %in% names(df)){
-          message('The predictor "', pred.name, '" does not exist in the dataset!\n')
+          message('| The predictor "', pred.name, '" does not exist in the dataset!\n')
+        }else if (pred.name %in% names(coef)){
+          message('| The predictor "', pred.name, '" already exists in the model!\n')
         }else break
       }else{
         if(!pred.name %in% names(coef)){
-          message('The predictor "', pred.name, '" does not exist in the model!\n')
+          message('| The predictor "', pred.name, '" does not exist in the model!\n')
         }else break
       }
     }
@@ -438,7 +441,10 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL){
       cat("\n")
       if(!toupper(satis) %in% as.character(1:4)){
         message("| Only a number between 1 and 4 is acceptable!\n")
-      }else break
+      }else{
+        satis <- as.numeric(satis)
+        break
+      }
     }
   }
   
@@ -462,7 +468,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL){
     }
   }
   
-  # index = 6
+  # index = 7
   q2.2.1.3.1_pc <- function(){
     # Question 2.2.1.3.1 - pc "Please enter the parameters (carry-over + power curve) you want to try"
     repeat{
@@ -479,10 +485,10 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL){
         message("| Please do enter a number!\n")
       } else break
     }
-    return(as.numeric(c(co.r, pc.r)))
+    return(as.numeric(c(co.r, pc.r, NA, NA)))
   }
   
-  # index = 7
+  # index = 8
   q2.2.1.3.1_sc <- function(){
     # Question 2.2.1.3.1 - sc "Please enter the parameters (carry-over + S curve) you want to try"
     repeat{
@@ -506,10 +512,10 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL){
         message("| Please do enter a number!\n")
       } else break
     }
-    return(as.numeric(c(co.r, sc.1, sc.2)))
+    return(as.numeric(c(co.r, NA, sc.1, sc.2)))
   }
   
-  # index = 8
+  # index = 9
   q2.2.2.2 <- function(){
     # Question 2.2.2.2 "Do you confirm removing this variable?"
     repeat{
@@ -521,7 +527,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL){
     }
   }
   
-  # index = 9
+  # index = 10
   q2.2.3.2 <- function(){
     # Question 2.2.3.2 "Do you want to perform stepwise regression check?"
     repeat{
@@ -532,6 +538,18 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL){
       }else break
     }
   }
+  
+  L_index <- LETTERS[index]
+  switch(L_index,
+         A = q2.2(),
+         B = q2.2.1.2(df, coef, opt),
+         C = q2.2.1.1(pred),
+         D = q2.2.1.3(),
+         E = q2.2.1.3_sub(),
+         G = q2.2.1.3.1_pc(),
+         H = q2.2.1.3.1_sc(),
+         I = q2.2.2.2(),
+         J = q2.2.3.2())
 }
 
 #--------#
@@ -632,7 +650,8 @@ final.output <- function(resp, data, fit, prmt, contri, aic = FALSE) {
   
   # Merge model information into one data frame
   # Output csv
-  prmt.alive <- prmt[which(prmt[[8]] == "alive"), -8]
+  pos <- which(colnames(prmt) == "status")
+  prmt.alive <- prmt[which(prmt[[pos]] == "alive"), -pos]
   
   if(rownames(coef)[1] == "(Intercept)"){
     prmt.alive <- rbind(NA, prmt.alive)
@@ -654,7 +673,7 @@ final.output <- function(resp, data, fit, prmt, contri, aic = FALSE) {
     sht4 <- createSheet(wb, sheetName = "Transformed_Data")
     
     addDataFrame(model, row.names = FALSE, sht1)
-    addDataFrame(prmt, sht2) # row.names = FALSE?
+    addDataFrame(prmt, row.names = FALSE, sht2)
     addDataFrame(resid, row.names = FALSE, sht3)
     addDataFrame(data, row.names = FALSE, sht4)
     
