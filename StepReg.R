@@ -461,7 +461,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
   }
   
   # index = 2
-  q2.2.1_2 <- function(df, coef, opt){
+  q2.2.1.2 <- function(df, coef, opt){
     # Question 2.2.1 / 2.2.2 "Indicate the predictor's name to be added to the model"
     # also applicable for question at step 2.2.2: 
     #   "Indicate the predictor's name to be removed from the model"
@@ -1150,7 +1150,7 @@ StepReg <- function(){
     }    
   }
   
-  if(class(e$data[[e$tvar]])[1] != "POSIXlt"){
+  if(class(e$data[[e$tvar]]) != "Date"){
     repeat{
       cat("| Which kind of date format is it in the raw data? \n")
       cat("|   a. m/d/y\n|   b. d/m/y\n|   c. y/m/d\n")
@@ -1165,9 +1165,10 @@ StepReg <- function(){
                                a = mdy(e$data[[e$tvar]]), 
                                b = dmy(e$data[[e$tvar]]), 
                                c = ymd(e$data[[e$tvar]]))
-    e$df0 <- e$data
-    
+  } else {
+    e$data[[e$tvar]] <- ymd(e$data[[e$tvar]])
   }
+  e$df0 <- e$data
   
   # STEP 1.5
   # choose start row: e$st.row
