@@ -489,12 +489,12 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
     # Question 2.2.1.1 "Transformation method"
     repeat{
       cat(
-        paste('Which kind of transformation does the variable "', pred, '" need to be adapted?', sep=""),
-        "  1. carry over + S curve",
-        "  2. carry over + power curve",
-        "  3. auto-selection between 1 and 2",
+        paste('| Which kind of transformation does the variable "', pred, '" need to be adapted?', sep=""),
+        "|  1. carry over + S curve",
+        "|  2. carry over + power curve",
+        "|  3. auto-selection between 1 and 2",
         "",
-        "  0. no transformation", "", sep="\n")
+        "|  0. no transformation", "", sep="\n")
       opt <- readline("| Please enter an option: ")
       cat("\n")
       if(!opt %in% as.character(0:3)){
@@ -1182,6 +1182,7 @@ StepReg <- function(){
       message("Please do enter an integer!\n")
     }    
   }
+  e$df1 <- e$df0[e$st.row:nrow(e$df0), ]
 
   # STEP 1.6 
   # rebuild the model if any model existed already
@@ -1214,7 +1215,7 @@ StepReg <- function(){
           # STEP 2.2.1.1 transformation method
           e$tm <- questions(3, pred = e$pred) 
           if(e$tm %in% 1:3){ # 0-no trans; 1-s curve; 2-power curve; 3-1 or 2
-            e$tm.prmt <- recom(e$pred, e$resp, e$df1, e$tm, e$fit1, e$st.row)
+            e$tm.prmt <- recom(e$pred, e$resp, e$df0, e$tm, e$fit1, e$st.row)
             e$df.temp0 <- modif(e$pred, e$df0, e$tm.prmt)
           } else if(e$tm == 0){
             e$tm.prmt <- rep(NA, 4)
