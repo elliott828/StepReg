@@ -1221,7 +1221,7 @@ StepReg <- function(){
             e$tm.prmt <- rep(NA, 4)
             e$df.temp0 <- e$df0
           }
-          e$df.temp1 <- df.temp0[e$st.row:nrow(df.temp0), ]
+          e$df.temp1 <- e$df.temp0[e$st.row:nrow(e$df.temp0), ]
           e$fit.temp <- trial(e$df.temp1, e$resp, e$fit1, action = 1, e$pred)
             
           repeat{
@@ -1240,7 +1240,7 @@ StepReg <- function(){
               }
               
               e$df.temp0 <- modif(e$pred, e$df0, e$tm.prmt)
-              e$df.temp1 <- df.temp0[e$st.row:nrow(df.temp0), ]
+              e$df.temp1 <- e$df.temp0[e$st.row:nrow(e$df.temp0), ]
               e$fit.temp <- trial(e$df.temp1, e$resp, e$fit1, action = 1, e$pred)             
             } else break # if(e$a_stsf %in% 2:4){ 
           }
