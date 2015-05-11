@@ -868,7 +868,7 @@ loop.output <- function(resp, data, fit, pred, tvar) {
   if(!is.null(pred)){
     modif_pred <- data.frame(x_axis, predictor = data[[pred]])
     pred_line <- ggplot(modif_pred, aes(x_axis))                    +
-      geom_line(aex(y = predictor), colour = "darkgrey", size = 1)  +
+      geom_line(aes(y = predictor), colour = "darkgrey", size = 1)  +
       ggtitle(paste("Modified Value of ", pred, sep = " "))         +
       theme(axis.title.x = element_blank(), 
             axis.title.y = element_blank())
