@@ -822,7 +822,8 @@ loop.output <- function(resp, data, fit, pred, tvar) {
   readline("Part. II  MAPE")
   resp.temp <- data[[resp]]
   resp.temp[which(resp.temp == 0)] <- mean(data[[resp]]) 
-  e$mape <- mean(abs(fit$residuals/resp.temp))
+  mape <- mean(abs(fit$residuals/resp.temp))
+  e$mape <- mape
   cat("MAPE of the model is ", round(mape, 4),"\n", sep = "")
   cat("\n")
   
