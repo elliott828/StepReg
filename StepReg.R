@@ -369,14 +369,14 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
   
   if(as.character(type) == "1"){
     # carryover + s-curve only
-    prmt.rec <- testall(resp, x0, pred, fit.coef = fit, type = 1, data = df1)
+    prmt.rec <- testall(resp, x0, pred, fit.coef = fit, type = 1, df = df1)
   }else if(as.character(type) == "2"){
     # carryover + power curve only
-    prmt.rec <- testall(resp, x0, pred, fit.coef = fit, type = 2, data = df1)
+    prmt.rec <- testall(resp, x0, pred, fit.coef = fit, type = 2, df = df1)
   }else if(as.character(type) == "3"){
     # compary carryover + s-curve and carryover + power curve 
-    prmt.cs <- testall(resp, x0, pred, fit.coef = fit, type = 1, data = df1)
-    prmt.cp <- testall(resp, x0, pred, fit.coef = fit, type = 2, data = df1)
+    prmt.cs <- testall(resp, x0, pred, fit.coef = fit, type = 1, df = df1)
+    prmt.cp <- testall(resp, x0, pred, fit.coef = fit, type = 2, df = df1)
     if(is.na(prmt.cs[1])|is.na(prmt.cs[1])){
       prmt.rec <- rep(NA, 5)
       message("There is no recommendation!\n")
@@ -417,9 +417,9 @@ modif <- function(pred, data, tm.prmt){
   sc.1 <- tm.prmt[3]
   sc.2 <- tm.prmt[4]
   
-  if(co.r == NA){
+  if(is.na(co.r)){
     df[[pred]] <- data[[pred]]
-  }else if(pc.r == NA){
+  }else if(is.na(pc.r)){
     df[[pred]] <- cs(data[[pred]], co.r, sc.1, sc.2)
   }else{
     df[[pred]] <- cp(data[[pred]], co.r, pc.r)
@@ -490,11 +490,11 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
     repeat{
       cat(
         paste('| Which kind of transformation does the variable "', pred, '" need to be adapted?', sep=""),
-        "|  1. carry over + S curve",
-        "|  2. carry over + power curve",
-        "|  3. auto-selection between 1 and 2",
-        "",
-        "|  0. no transformation", "", sep="\n")
+              "|  1. carry over + S curve",
+              "|  2. carry over + power curve",
+              "|  3. auto-selection between 1 and 2",
+              "",
+              "|  0. no transformation", "", sep="\n")
       opt <- readline("| Please enter an option: ")
       cat("\n")
       if(!opt %in% as.character(0:3)){
@@ -516,7 +516,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
           '|   2. I want to change the transformation method',
           '|   3. I want to change a predictor',
           '|   4. Yes, I am OK with the transformation',
-          '', '\n')
+          '', sep = '\n')
       satis <- readline("| Please enter an option: ")
       cat("\n")
       if(!toupper(satis) %in% as.character(1:4)){
