@@ -18,16 +18,6 @@ req.pkg(all.pcg)
 # STEP 0.2
 # Initialization
 e <- new.env()
-e$fit1 <- NULL
-e$prmt <- data.frame(variable = character(),
-                    co.r = numeric(),
-                    pc.r = numeric(),
-                    sc.1 = numeric(),
-                    sc.2 = numeric(),
-                    status = character(),  #indicate the availability of variable for the model
-                    stringsAsFactors = F)
-# e$prmt[[6]] <- factor(prmt[[6]], levels = c("alive", "dead"))
-
 
 # STEP 0.3
 # Functions Definition
@@ -306,10 +296,12 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
       message("This variable cannot get into the model!\n")
       message("Please switch another variable!\n")
     } else {
-      curve.prmt <- ifelse(len == 2, "exponent", c("lamda1","lamda2"))
-      colnames(prmt.all) <- c("carryover.rate", curve.prmt, "coef",
+      curve.prmt <- ifelse(len == 2, "pc.r", c("sc.1","sc.2"))
+      colnames(prmt.all) <- c("co.r", curve.prmt, "coef",
                               "p-value", "r.squared", "adj.r.squared")
       rownames(prmt.all) <- NULL
+      pos.order <- which(colnames(prmt.all) == "adj.r.squared")
+      prmt.all <- prmt.all[order(prmt.all[, pos.order], decreasing = T),]
       
       # export all parameters and related model statistics to local working directory
       write.csv(prmt.all, paste("prmt", nam, pred, "csv",sep = "."))
@@ -357,7 +349,7 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
         message("The estimate of coefficient is not significant!\n")
       }
       
-      names(curve.prmt) <- c("Carryover.Rate","Power.Rate","Lamda1","Lamda2","Adj.r2")
+      names(curve.prmt) <- c("co.r","pc.r","sc.1","sc.2","Adj.r2")
     }
     
     return(curve.prmt)
@@ -412,10 +404,10 @@ modif <- function(pred, data, tm.prmt){
   #---------------------------------
   
   df <- data
-  co.r <- tm.prmt[1]
-  pc.r <- tm.prmt[2]
-  sc.1 <- tm.prmt[3]
-  sc.2 <- tm.prmt[4]
+  co.r <- tm.prmt[[1]]
+  pc.r <- tm.prmt[[2]]
+  sc.1 <- tm.prmt[[3]]
+  sc.2 <- tm.prmt[[4]]
   
   if(is.na(co.r)){
     df[[pred]] <- data[[pred]]
@@ -614,7 +606,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
   q2.2.3.2 <- function(){
     # Question 2.2.3.2 "Do you want to perform stepwise regression check?"
     repeat{
-      stepaic <- readline("| Do you to do stepwise regression check? ")
+      stepaic <- readline("| Do you want to do stepwise regression check (Y/N)? ")
       cat("\n")
       if(!toupper(stepaic) %in% c("Y","N")){
         message("| Only Y/y and N/n is acceptable!\n")
@@ -717,6 +709,7 @@ rebuild <- function(resp, data, st.row) {
     }else if(file.exists(prmt.file)){
       if(endstr == ".csv"){
         e$prmt <- read.csv(prmt.file, stringsAsFactors = FALSE)
+        # names(e$prmt) <- c("variable", "co.r", "pc.r", "sc.1", "sc.2", "status")
       } else {
         sht.names <- names(getSheets(loadWorkbook(prmt.file)))
         repeat{
@@ -727,6 +720,7 @@ rebuild <- function(resp, data, st.row) {
           }else break
         }
         e$prmt <- read.xlsx(prmt.file, sheetName = sht.name2, stringsAsFactors = F)
+        # names(e$prmt) <- c("variable", "co.r", "pc.r", "sc.1", "sc.2", "status")
       }
       break
     }else if(!file.exists(prmt.file)){
@@ -804,6 +798,7 @@ loop.output <- function(resp, data, fit, pred, tvar) {
   
   # Needed Packages: "zoo" (for library(lmtest)), "lmtest" (for dwtest())
   
+  cat(paste(rep("-+-",20),collapse=""),"\n\n")
   readline('You can find the output of the model below.\nIn next 5 steps, please press <Enter> to continue...')
   cat("\n")
   
@@ -846,7 +841,7 @@ loop.output <- function(resp, data, fit, pred, tvar) {
     geom_point(colour = "orange", size = 3)              +
     theme(legend.position = "none")                      +
     geom_hline(yintercept = 0, colour = "red")           +
-    ggtitle("Scatterplot of Model Residuals")            +
+    ggtitle("Plot 1. Scatterplot of Model Residuals")    +
     xlab("Observation Index")                            +
     ylab("Residuals")
   
@@ -860,7 +855,7 @@ loop.output <- function(resp, data, fit, pred, tvar) {
     geom_histogram(stats = "identity", fill = "orange", 
                    colour = "white", binwidth = binrange)           +
     geom_vline(xintercept = mean_res, colour = "red")               +
-    ggtitle("Histogram of Model Residuals")                         +
+    ggtitle("Plot 2. Histogram of Model Residuals")                 +
     xlab("Residual Interval")                                       +
     ylab("Residuals")
   
@@ -869,7 +864,7 @@ loop.output <- function(resp, data, fit, pred, tvar) {
     modif_pred <- data.frame(x_axis, predictor = data[[pred]])
     pred_line <- ggplot(modif_pred, aes(x_axis))                    +
       geom_line(aes(y = predictor), colour = "darkgrey", size = 1)  +
-      ggtitle(paste("Modified Value of ", pred, sep = " "))         +
+      ggtitle(paste("Plot 3. Modified Value of ", pred, sep = " ")) +
       theme(axis.title.x = element_blank(), 
             axis.title.y = element_blank())
   }
@@ -886,7 +881,7 @@ loop.output <- function(resp, data, fit, pred, tvar) {
     ggplot(aes(x_axis))                                           +
     geom_line(aes(y = act.resp), colour = "darkgrey", size = 1)   +
     geom_line(aes(y = fit.resp), colour = "red", size = 1)        +
-    ggtitle("Modeled vs. Actual Variable")                        +
+    ggtitle("Plot 4. Modeled vs. Actual Variable")                +
     ylab("Count / Volume")                                        +
     theme(legend.position = "right", 
           axis.title.x = element_blank())
@@ -969,7 +964,7 @@ loop.output <- function(resp, data, fit, pred, tvar) {
     }
   }
   
-  cat(paste(rep("-", 40), collapse = ""), "", sep = "\n")
+  cat(paste(rep("-+-",20),collapse=""),"\n\n")
   
 } # end of function loop.output()
 
@@ -1040,7 +1035,7 @@ final.output <- function(resp, data, fit, prmt, contri, aic = FALSE) {
     
     saveWorkbook(wb, paste("model_result", ifelse(aic, "_aic", ""), 
                            ".xlsx", sep = ""))
-    message('The model results are saved as "model_result',ifelse(aic, "_aic", ""),
+    message('| The model results are saved as "model_result',ifelse(aic, "_aic", ""),
             '.xlsx" under the default working directory.\n')
     
   }else{
@@ -1083,6 +1078,15 @@ e$wd_recover <- getwd()
 # STEP 1
 # Structure Function: StepReg()
 StepReg <- function(){
+  e$fit1 <- NULL
+  e$prmt <- data.frame(variable = character(),
+                       co.r = numeric(),
+                       pc.r = numeric(),
+                       sc.1 = numeric(),
+                       sc.2 = numeric(),
+                       status = character(),  #indicate the availability of variable for the model
+                       stringsAsFactors = F)
+  # e$prmt[[6]] <- factor(prmt[[6]], levels = c("alive", "dead"))
   # STEP 1.1
   # Welcome!
   cat("\n")
@@ -1259,23 +1263,24 @@ StepReg <- function(){
                                   co.r = e$tm.prmt[1], pc.r = e$tm.prmt[2], 
                                   sc.1 = e$tm.prmt[3], sc.2 = e$tm.prmt[4], 
                                   status = "alive", stringsAsFactors = F)
+          # names(e$prmt) <- c("variable", "co.r", "pc.r", "sc.1", "sc.2", "status")
           e$prmt <- rbind(e$prmt, prmt.line)
           break
         }
       }
-    } else if(e$a_nm == 2){ # 2. Remove a predictor
-      e$pred <- question(2, df = e$df1, coef = e$fit1$coef, opt = 2) # predictor name to remove
+    } else if(a_nm == 2){ # 2. Remove a predictor
+      e$pred <- questions(2, df = e$df1, coef = e$fit1$coef, opt = 2) # predictor name to remove
       e$fit.temp <- trial(e$df1, e$resp, e$fit1, -1, e$pred)
       loop.output(e$resp, e$df1, e$fit.temp, e$pred, e$tvar)
       warn(fit1 = e$fit1, fit2 = e$fit.temp, p.cons = 0.2)
-      e$a_conf <- question(9) # STEP 2.2.2.2 confirm the removal or not
+      e$a_conf <- questions(9) # STEP 2.2.2.2 confirm the removal or not
       if(e$a_conf == "Y"){
         e$fit1 <- e$fit.temp
         e$df0[[e$pred]] <- e$data[[e$pred]]
         e$df1 <- e$df0[e$st.row:nrow(e$df0), ]
         e$prmt[which((e$prmt[[1]] == e$pred) & (e$prmt[[6]] == "alive")), 6] == "dead"
       } # else if(e$a_conf == "N") do nothing
-    } else if(e$a_nm == 3){ # 3. Stop modeling
+    } else if(a_nm == 3){ # 3. Stop modeling
       final.output(e$resp, e$df1, e$fit1, e$prmt, e$contri, questions(10))
       break
     }
