@@ -384,7 +384,7 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
     }
   }
   return(prmt.rec[1:4])
-}
+} # end of funciton recom()
 
 #=====================================================================
 
@@ -695,15 +695,14 @@ rebuild <- function(resp, data, st.row) {
   # need one step to confirm the model, then 
   # fit <- fit.temp; df <- df.temp
   
-  message("| You're expected to input the COEFFICIENTS file. ")
-  message("| Make sure the full data file and coefficients file are RELATED! ")
+  message("| You're expected to input the Parameters file. ")
+  message("| Make sure the full data file and Parameters file are RELATED! ")
   message("| Make sure the structure inside each worksheet or csv file is the same as StepReg TOOL OUTPUTS! \n")
   
   repeat{
     prmt.file <- readline('| Please enter the name of "prmt" file: ')
     cat("\n")
     endstr <- substr(prmt.file, nchar(prmt.file)-3, nchar(prmt.file))
-    cat("\n")
     if (!endstr %in% c(".csv", "xlsx", ".xls")){
       message('| Only ".csv", "*.xlsx" or "*.xls" file is expected!\n')
     }else if(file.exists(prmt.file)){
@@ -713,7 +712,7 @@ rebuild <- function(resp, data, st.row) {
       } else {
         sht.names <- names(getSheets(loadWorkbook(prmt.file)))
         repeat{
-          sht.name2 <- readline("| Please enter the name of COEFFICIENTS worksheet: ")
+          sht.name2 <- readline("| Please enter the name of Parameters worksheet: ")
           cat("\n")
           if (!sht.name2 %in% sht.names){
             message('| The worksheet "', sht.name2, '" is not found!\n')
@@ -726,12 +725,12 @@ rebuild <- function(resp, data, st.row) {
     }else if(!file.exists(prmt.file)){
       message('| "', prmt.file, '" does not exist in the work directory!')
       message('| Please re-check it in the file explorer!\n')
-      cat("\n")
     }
   }
   
   e$prmt$status <- factor(e$prmt$status, levels = c("alive", "dead"))
   prmt.alive <- e$prmt[which(e$prmt$status == "alive"),]
+  df0 <- data
   
   for(i in 1:nrow(prmt.alive)){
     pred <- as.character(prmt.alive[[1]][i])
@@ -740,9 +739,7 @@ rebuild <- function(resp, data, st.row) {
     sc.1 <- prmt.alive[[4]][i]
     sc.2 <- prmt.alive[[5]][i]
     
-    type <- if(is.na(co.r)){0} else if(is.na(pc.r)){1} else 2 
-    
-    df0 <- modif(pred, type, data, co.r, sc.1, sc.2, pc.r)
+    df0 <- modif(pred, df0, c(co.r, pc.r, sc.1, sc.2))
   }
   e$df0 <- df0
   e$df1 <- df0[st.row:dim(df0)[1], ]
@@ -1011,8 +1008,7 @@ final.output <- function(resp, data, fit, prmt, contri, aic = FALSE) {
   
   if(rownames(coef)[1] == "(Intercept)"){
     prmt.alive <- rbind(NA, prmt.alive)
-    prmt.alive$pred.i <- c("(Intercept)", as.vector(prmt.alive$pred.i)[-1]) 
-    # column "pred" is a factor, need to be changed to a vector for further modification
+    prmt.alive[1, 1] <- "(Intercept)"
     vif <- rbind(NA, as.matrix(vif))
   }
   model <- as.data.frame(cbind(prmt.alive, coef, contri, vif), stringsAsFactors = F)
@@ -1036,7 +1032,7 @@ final.output <- function(resp, data, fit, prmt, contri, aic = FALSE) {
     saveWorkbook(wb, paste("model_result", ifelse(aic, "_aic", ""), 
                            ".xlsx", sep = ""))
     message('| The model results are saved as "model_result',ifelse(aic, "_aic", ""),
-            '.xlsx" under the default working directory.\n')
+            '.xlsx".\n')
     
   }else{
     # 1. residuals.csv
@@ -1071,13 +1067,18 @@ final.output <- function(resp, data, fit, prmt, contri, aic = FALSE) {
 
 #=====================================================================
 
-# STEP 0.5 
-# save original work directory for final recover
-e$wd_recover <- getwd()
-
-# STEP 1
 # Structure Function: StepReg()
 StepReg <- function(){
+  
+  # STEP 0.5 
+  # save original work directory for final recover
+  e$wd_recover <- setwd("~/.")
+  
+  # STEP 0.6
+  # set working directory
+  if(!file.exists("StepReg_WD"))dir.create("StepReg_WD")
+  setwd(paste(e$wd_recover, "StepReg_WD", sep = "/"))
+  
   e$fit1 <- NULL
   e$prmt <- data.frame(variable = character(),
                        co.r = numeric(),
@@ -1087,13 +1088,16 @@ StepReg <- function(){
                        status = character(),  #indicate the availability of variable for the model
                        stringsAsFactors = F)
   # e$prmt[[6]] <- factor(prmt[[6]], levels = c("alive", "dead"))
+  
   # STEP 1.1
   # Welcome!
   cat("\n")
-  message("| Welcome to StepReg!")
+  message("| Welcome to StepReg system!")
   message("| Please follow instructions to finish the regression.\n")
-  message("| Be aware all the outputs will be exported to the directory: ")
-  message("| ", paste(getwd(), "StepReg_OUTPUT", sep = "/"), ".\n")
+  message("| Be aware that in StepReg system the working directory is set as: ")
+  message("| ", paste(getwd(), "StepReg_WD", sep = "/"), ".\n")
+  message("| It will be recovered to your default directory after the system is closed. \n")
+
   # STEP 1.2
   # Read Data
   repeat{
@@ -1103,7 +1107,7 @@ StepReg <- function(){
     if (!endstr %in% c(".csv", "xlsx", ".xls")){
       message('| Only "*.csv", "*.xlsx" or "*.xls" file is expected!\n')
     }else if(!file.exists(data.name)){
-      message('| "', data.name, '" does not exist in your work directory!')
+      message('| "', data.name, '" does not exist in StepReg system work directory!')
       message('| Please re-check it in the file explorer!\n')
     }else if(endstr == ".csv"){
       e$data <- read.csv(data.name, stringsAsFactors = F)
@@ -1159,7 +1163,7 @@ StepReg <- function(){
     repeat{
       cat("| Which kind of date format is it in the raw data? \n")
       cat("|   a. m/d/y\n|   b. d/m/y\n|   c. y/m/d\n")
-      t_f <- readline("\n| Please choose a format number: ")
+      t_f <- tolower(readline("\n| Please choose a format: "))
       cat("\n")
       if(!t_f %in% c("a","b","c")){
         message('| Only "a", "b" or "c" is acceptable!\n')
@@ -1203,11 +1207,6 @@ StepReg <- function(){
         break
     } else break
   }
-  
-  # STEP 1.7
-  # set outputs directory
-  if(!file.exists("StepReg_OUTPUT"))dir.create("StepReg_OUTPUT")
-  setwd(paste(getwd(), "StepReg_OUTPUT", sep = "/"))
   
   # big loop start: What's the next move? 
   repeat{
@@ -1286,7 +1285,13 @@ StepReg <- function(){
     }
   }
 
-  setwd(e$wd_recover)
   message("| Thank you for using StepReg tool! Goodbye! \n")
   
+  # reset wd to the default after StepReg finished
+  setwd(e$wd_recover)
+  
 } # end of function StepReg()
+
+# start StepReg system
+StepReg()
+
