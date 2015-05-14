@@ -249,11 +249,10 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
   summary.stats <- function(resp, x, fit.coef = fit, pred, df){
     smr.fit <- fit.update(resp, x, fit.coef, pred, df)
     smr <- summary(smr.fit)
-    simulation <- cbind(coef(smr.fit)[1], t(t(as.matrix(df[, names(coef(smr.fit))[-1]])) * as.vector(coef(smr.fit)[-1])))
-    colnames(simulation) <- names(coef(smr.fit))
-    contri.d <- colSums(simulation)/sum(smr.fit$fitted.values)
+    simulation <-  t(t(as.matrix(x)) * as.vector(coef(smr.fit)[[pred]]))
+    contri.d <- sum(simulation)/sum(smr.fit$fitted.values)
     smr.coef <- subset(smr$coefficients, rownames(smr$coefficients)==pred)[c(1,4)]
-    smr.key <- c(smr.coef, smr$r.squared, smr$adj.r.squared, contri.d[length(contri.d)])
+    smr.key <- c(smr.coef, smr$r.squared, smr$adj.r.squared, contri.d)
     names(smr.key) <- c("Coefficient", "P.value", "R.squared", "Adj.R.squared", "Contribution")
     # to generate a group of key statistics, how many variables corresponding to how many groups
     return(t(smr.key))
@@ -300,12 +299,11 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
       message("This variable cannot get into the model!\n")
       message("Please switch another variable!\n")
     } else {
-      curve.prmt <- ifelse(len == 2, "pc.r", c("sc.1","sc.2"))
+      curve.prmt <- if(len == 2) "pc.r" else c("sc.1","sc.2")
       colnames(prmt.all) <- c("co.r", curve.prmt, "coef",
                               "p-value", "r.squared", "adj.r.squared", "contribution")
       rownames(prmt.all) <- NULL
-      pos.order <- which(colnames(prmt.all) == "adj.r.squared")
-      prmt.all <- prmt.all[order(prmt.all[, pos.order], decreasing = T),]
+      prmt.all <- prmt.all[order(prmt.all[["adj.r.squared"]], decreasing = T),]
       
       # export all parameters and related model statistics to local working directory
       write.csv(prmt.all, paste("prmt", nam, pred, "csv",sep = "."))
@@ -314,7 +312,7 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
       
       # capture the best group of parameters
       # get the best adj. r squared first then allocate the position
-      posi <- which.max(as.numeric(prmt.all[, ncol(prmt.all)]))
+      posi <- which.max(as.numeric(prmt.all[["adj.r.squared"]]))
       
       best.stats <- prmt.all[posi,]
       rownames(best.stats) <- NULL   # remove the row index assigned automatically by the program
@@ -346,9 +344,9 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
       
       cat(paste(" ", paste(rep("-",40), collapse = ""),sep = ""),"\n")
       
-      if(is.na(best.stats[ncol(prmt.all)-2])){
+      if(is.na(best.stats[["p-value"]])){
         message("This variable is not advised to be added to the model!\n")
-      }else if (best.stats[ncol(prmt.all)-2] > 0.2){
+      }else if (best.stats[["p-value"]] > 0.2){
         message("Please be aware that the p-value of predictor coefficient is larger than 0.2!")
         message("The estimate of coefficient is not significant!\n")
       }
@@ -357,7 +355,7 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
     }
     
     return(curve.prmt)
-  }
+  } # end of function testall()
   
   #-------------------------------------#
   # PART III - Application of functions #
