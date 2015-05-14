@@ -247,10 +247,14 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
   # Extract the key modeling summary statatistics
   # Call Function 2: fit.update()
   summary.stats <- function(resp, x, fit.coef = fit, pred, df){
-    smr <- summary(fit.update(resp, x, fit.coef, pred, df))
+    smr.fit <- fit.update(resp, x, fit.coef, pred, df)
+    smr <- summary(smr.fit)
+    simulation <- cbind(coef(smr.fit)[1], t(t(as.matrix(df[, names(coef(smr.fit))[-1]])) * as.vector(coef(smr.fit)[-1])))
+    colnames(simulation) <- names(coef(smr.fit))
+    contri.d <- colSums(simulation)/sum(smr.fit$fitted.values)
     smr.coef <- subset(smr$coefficients, rownames(smr$coefficients)==pred)[c(1,4)]
-    smr.key <- c(smr.coef, smr$r.squared, smr$adj.r.squared)
-    names(smr.key) <- c("Coefficient", "P.value", "R.squared", "Adj.R.squared")
+    smr.key <- c(smr.coef, smr$r.squared, smr$adj.r.squared, contri.d[length(contri.d)])
+    names(smr.key) <- c("Coefficient", "P.value", "R.squared", "Adj.R.squared", "Contribution")
     # to generate a group of key statistics, how many variables corresponding to how many groups
     return(t(smr.key))
   }
@@ -298,7 +302,7 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
     } else {
       curve.prmt <- ifelse(len == 2, "pc.r", c("sc.1","sc.2"))
       colnames(prmt.all) <- c("co.r", curve.prmt, "coef",
-                              "p-value", "r.squared", "adj.r.squared")
+                              "p-value", "r.squared", "adj.r.squared", "contribution")
       rownames(prmt.all) <- NULL
       pos.order <- which(colnames(prmt.all) == "adj.r.squared")
       prmt.all <- prmt.all[order(prmt.all[, pos.order], decreasing = T),]
@@ -1072,7 +1076,7 @@ StepReg <- function(){
   
   # STEP 0.5 
   # save original work directory for final recover
-  e$wd_recover <- setwd("~/.")
+  e$wd_recover <- getwd()
   
   # STEP 0.6
   # set working directory
@@ -1095,7 +1099,7 @@ StepReg <- function(){
   message("| Welcome to StepReg system!")
   message("| Please follow instructions to finish the regression.\n")
   message("| Be aware that in StepReg system the working directory is set as: ")
-  message("| ", paste(getwd(), "StepReg_WD", sep = "/"), ".\n")
+  message("| ", getwd(), ".\n")
   message("| It will be recovered to your default directory after the system is closed. \n")
 
   # STEP 1.2
