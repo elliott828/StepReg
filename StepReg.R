@@ -296,8 +296,8 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
     prmt.all <- prmt.all[complete.cases(prmt.all), ]
     if(nrow(prmt.all) == 0){
       op.recom <- as.data.frame(matrix(1, nrow = 1, ncol = 9))
-      message("This variable cannot get into the model!\n")
-      message("Please switch another variable!\n")
+      message("| ", e$pred, " cannot get into the model!\n")
+      message("| Please switch another variable!\n")
     } else {
       curve.prmt <- if(len == 2) "pc.r" else c("sc.1","sc.2")
       colnames(prmt.all) <- c("co.r", curve.prmt, "coef",
@@ -345,10 +345,10 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
       cat(paste(" ", paste(rep("-",40), collapse = ""),sep = ""),"\n")
       
       if(is.na(best.stats[["p-value"]])){
-        message("This variable is not advised to be added to the model!\n")
+        message("| ", e$pred, " is not advised to be added to the model!\n")
       }else if (best.stats[["p-value"]] > 0.2){
-        message("Please be aware that the p-value of predictor coefficient is larger than 0.2!")
-        message("The estimate of coefficient is not significant!\n")
+        message("| Please be aware that the p-value of predictor coefficient is larger than 0.2!")
+        message("| The estimate of coefficient is not significant!\n")
       }
       
       names(curve.prmt) <- c("co.r","pc.r","sc.1","sc.2","Adj.r2")
@@ -595,7 +595,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
   q2.2.2.2 <- function(){
     # Question 2.2.2.2 "Do you confirm removing this variable?"
     repeat{
-      conf.remv <- readline("| Do you confirm removing this variable (Y/N)? ")
+      conf.remv <- readline(paste("| Do you confirm removing", e$pred, "(Y/N)? ", sep = " "))
       cat("\n")
       if(!toupper(conf.remv) %in% c("Y","N")){
         message("| Only Y/y and N/n is acceptable!\n")
@@ -699,7 +699,7 @@ rebuild <- function(resp, data, st.row) {
   
   message("| You're expected to input the Parameters file. ")
   message("| Make sure the full data file and Parameters file are RELATED! ")
-  message("| Make sure the structure inside each worksheet or csv file is the same as StepReg TOOL OUTPUTS! \n")
+  message("| Make sure the data structure is the same as StepReg TOOL OUTPUTS! \n")
   
   repeat{
     prmt.file <- readline('| Please enter the name of "prmt" file: ')
@@ -910,7 +910,6 @@ loop.output <- function(resp, data, fit, pred, tvar) {
   simulation <- cbind(coef(fit)[1], t(t(as.matrix(data[, names(coef(fit))[-1]])) * as.vector(coef(fit)[-1])))
   colnames(simulation) <- names(coef(fit))
   contri.d <- colSums(simulation)/sum(fit$fitted.values)
-  e$contri <- contri.d
   
   # contri.p: positive
   contri.p <- contri.d[which(contri.d >= 0)]
@@ -973,7 +972,7 @@ loop.output <- function(resp, data, fit, pred, tvar) {
 # final.output() #
 #----------------#
 
-final.output <- function(resp, data, fit, prmt, contri, aic = FALSE) {
+final.output <- function(resp, data, tvar, fit, prmt, aic = FALSE) {
   # prmt is a dataframe including 8 columns: 
   #       variable, trans.meth, co.r, sc.1, sc.2, pc.r, oth, status
   # data = df1 # Transformed Data
@@ -989,9 +988,9 @@ final.output <- function(resp, data, fit, prmt, contri, aic = FALSE) {
   # put 2, 3, 4 into one data frame, and then output into a csv file
   
   # 2. Residuals
-  resid <- cbind(data[, resp], fit$fitted.values, summary(fit)$residuals)
+  resid <- cbind(data[, c(tvar, resp)], fit$fitted.values, summary(fit)$residuals)
   rownames(resid) <- NULL
-  colnames(resid) <- c(resp, "Prediction", "Residuals")
+  colnames(resid) <- c(tvar, resp, "Prediction", "Residuals")
   
   # 3. Coefficients
   coef <- coef(summary(fit))     # Estimate  Std. Error    t value   Pr(>|t|)
@@ -1003,6 +1002,11 @@ final.output <- function(resp, data, fit, prmt, contri, aic = FALSE) {
     vif <- NA
   }
   
+  # 5. Contribution    
+  simulation <- cbind(coef(fit)[1], t(t(as.matrix(data[, names(coef(fit))[-1]])) * as.vector(coef(fit)[-1])))
+  colnames(simulation) <- names(coef(fit))
+  contri.d <- colSums(simulation)/sum(fit$fitted.values)
+  
   # Merge model information into one data frame
   # Output csv
   pos <- which(colnames(prmt) == "status")
@@ -1013,8 +1017,10 @@ final.output <- function(resp, data, fit, prmt, contri, aic = FALSE) {
     prmt.alive[1, 1] <- "(Intercept)"
     vif <- rbind(NA, as.matrix(vif))
   }
-  model <- as.data.frame(cbind(prmt.alive, coef, contri, vif), stringsAsFactors = F)
-  rownames(model) <- NULL
+  model <- data.frame(prmt.alive[, 1], coef[, 1], prmt.alive[, -1], coef[, -1], 
+                      vif = vif, contribution = contri.d, stringsAsFactors = F)
+  names(model) <- c("variable", "coefficient", "co.r", "pc.r",	"sc.1", "sc.2", 
+                    "std.error", "t.value", "p.value", "vif", "contribution")
   
   # --------------------------------------------------------------------------
   
@@ -1034,28 +1040,34 @@ final.output <- function(resp, data, fit, prmt, contri, aic = FALSE) {
     saveWorkbook(wb, paste("model_result", ifelse(aic, "_aic", ""), 
                            ".xlsx", sep = ""))
     message('| The model results are saved as "model_result',ifelse(aic, "_aic", ""),
-            '.xlsx".\n')
+            '.xlsx".')
+    
+    # prmt.csv: for convenience of importing model next time
+    write.csv(prmt, paste(aic.ind, "prmt.csv", sep = ""))
+    message(paste('| The variable parameters history is exported to "',
+                  paste(aic.ind, "prmt.csv", sep = ""),
+                  '". ',sep=""))
+    cat(paste(rep("-+-",20),collapse=""),"\n\n")
     
   }else{
     # 1. residuals.csv
     write.csv(resid, paste(aic.ind, "residuals.csv", sep = ""))
-    message(paste('Value of response variable, prediction and residuals are exported to',
+    message(paste('| Value of response variable, prediction and residuals are exported to',
                   paste('the file "',paste(aic.ind, "residuals.csv", sep = ""),
-                        '" under default working directory', sep=""), sep="\n"))
+                        '". ', sep=""), sep="\n"))
     cat(paste(rep("-+-",20),collapse=""))
     
     # 2. prmt.csv
     write.csv(prmt, paste(aic.ind, "prmt.csv", sep = ""))
     message(paste('Variable parameters history is exported to "',
                   paste(aic.ind, "prmt.csv", sep = ""),
-                  '" under default working directory',sep=""))
+                  '"',sep=""))
     cat(paste(rep("-+-",20),collapse=""))
     
     # 3. model.results.csv
     write.csv(model, paste(aic.ind, "model.results.csv", sep = ""))
     message(paste('The modeling result is exported to "', 
                   paste(aic.ind, "model.results.csv", sep = ""),'".',sep=""))
-    message('You could find the file under default working directory.')
     cat(paste(rep("-+-",20),collapse=""),"\n\n")
     
     # 4. transformed.data.csv
@@ -1279,10 +1291,10 @@ StepReg <- function(){
         e$fit1 <- e$fit.temp
         e$df0[[e$pred]] <- e$data[[e$pred]]
         e$df1 <- e$df0[e$st.row:nrow(e$df0), ]
-        e$prmt[which((e$prmt[[1]] == e$pred) & (e$prmt[[6]] == "alive")), 6] == "dead"
+        e$prmt[which((e$prmt[[1]] == e$pred) & (e$prmt[[6]] == "alive")), 6] <- "dead"
       } # else if(e$a_conf == "N") do nothing
     } else if(a_nm == 3){ # 3. Stop modeling
-      final.output(e$resp, e$df1, e$fit1, e$prmt, e$contri, questions(10))
+      final.output(e$resp, e$df1, e$tvar, e$fit1, e$prmt, questions(10))
       break
     }
   }
