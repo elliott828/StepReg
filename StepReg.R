@@ -577,14 +577,14 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
     repeat{
       sc.1 <- readline("| Please suggest alternative power curve rate: ")
       cat("\n")
-      if(!all(strsplit(pc.r, split = "")[[1]] %in% c(as.character(0:9), "."))) {
+      if(!all(strsplit(sc.1, split = "")[[1]] %in% c(as.character(0:9), "."))) {
         message("| Please do enter a number!\n")
       } else break
     }
     repeat{
       sc.2 <- readline("| Please suggest alternative power curve rate: ")
       cat("\n")
-      if(!all(strsplit(pc.r, split = "")[[1]] %in% c(as.character(0:9), "."))) {
+      if(!all(strsplit(sc.2, split = "")[[1]] %in% c(as.character(0:9), "."))) {
         message("| Please do enter a number!\n")
       } else break
     }
