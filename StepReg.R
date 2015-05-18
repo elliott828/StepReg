@@ -1250,7 +1250,7 @@ StepReg <- function(){
             e$a_stsf <- questions(4) 
             if(e$a_stsf == 1){ # opt1 change transformation prmt
               if(e$tm == 3){
-                e$tm.prmt <- if(questions(5) == 1) questions(8) else questions(7))
+                e$tm.prmt <- if(questions(5) == 1) questions(8) else questions(7)
               } else if(e$tm == 1){
                 e$tm.prmt <- questions(8)
               } else if(e$tm == 2){
