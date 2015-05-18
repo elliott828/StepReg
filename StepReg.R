@@ -575,14 +575,14 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
       } else break
     }
     repeat{
-      sc.1 <- readline("| Please suggest alternative power curve rate: ")
+      sc.1 <- readline("| Please suggest alternative the 1st S curve rate: ")
       cat("\n")
       if(!all(strsplit(sc.1, split = "")[[1]] %in% c(as.character(0:9), "."))) {
         message("| Please do enter a number!\n")
       } else break
     }
     repeat{
-      sc.2 <- readline("| Please suggest alternative power curve rate: ")
+      sc.2 <- readline("| Please suggest alternative the 2nd S curve rate: ")
       cat("\n")
       if(!all(strsplit(sc.2, split = "")[[1]] %in% c(as.character(0:9), "."))) {
         message("| Please do enter a number!\n")
@@ -1250,7 +1250,7 @@ StepReg <- function(){
             e$a_stsf <- questions(4) 
             if(e$a_stsf == 1){ # opt1 change transformation prmt
               if(e$tm == 3){
-                e$tm.prmt <- ifelse(questions(5) == 1, questions(8), questions(7))
+                e$tm.prmt <- if(questions(5) == 1) questions(8) else questions(7))
               } else if(e$tm == 1){
                 e$tm.prmt <- questions(8)
               } else if(e$tm == 2){
