@@ -334,12 +334,12 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
             paste(" - The recommended lamda2(S-curve) is ", best.stats[3], sep = ""),
             sep = "\n")
         curve.prmt <- c(best.stats[1], NA, best.stats[2], best.stats[3],
-                        best.stats[4])
+                        best.stats[ncol(prmt.all)-1])
       }else if(as.character(type)=="2"){
         cat(paste(" - The recommended power rate is ", best.stats[2], sep = ""),
             sep = "\n")
         curve.prmt <- c(best.stats[1], best.stats[2], NA, NA,
-                        best.stats[4])
+                        best.stats[ncol(prmt.all)-1])
       }
       
       cat(paste(" ", paste(rep("-",40), collapse = ""),sep = ""),"\n")
@@ -513,7 +513,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
           '', sep = '\n')
       satis <- readline("| Please enter an option: ")
       cat("\n")
-      if(!toupper(satis) %in% as.character(1:4)){
+      if(!satis %in% as.character(1:4)){
         message("| Only a number between 1 and 4 is acceptable!\n")
       }else{
         satis <- as.numeric(satis)
@@ -601,7 +601,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
         message("| Only Y/y and N/n is acceptable!\n")
       }else break
     }
-    return(conf.remv)
+    return(toupper(conf.remv))
   }
   
   # index = 10
@@ -613,7 +613,7 @@ questions <- function(index, pred = NULL, df = NULL, coef = NULL, opt = NULL){
       if(!toupper(stepaic) %in% c("Y","N")){
         message("| Only Y/y and N/n is acceptable!\n")
       }else{
-        aic <- ifelse(stepaic == "Y", T, F)
+        aic <- ifelse(toupper(stepaic) == "Y", T, F)
         break
       } 
     }
