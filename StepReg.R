@@ -334,12 +334,12 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
             paste(" - The recommended lamda2(S-curve) is ", best.stats[3], sep = ""),
             sep = "\n")
         curve.prmt <- c(best.stats[1], NA, best.stats[2], best.stats[3],
-                        best.stats[ncol(prmt.all)])
+                        best.stats[4])
       }else if(as.character(type)=="2"){
         cat(paste(" - The recommended power rate is ", best.stats[2], sep = ""),
             sep = "\n")
         curve.prmt <- c(best.stats[1], best.stats[2], NA, NA,
-                        best.stats[ncol(prmt.all)])
+                        best.stats[4])
       }
       
       cat(paste(" ", paste(rep("-",40), collapse = ""),sep = ""),"\n")
