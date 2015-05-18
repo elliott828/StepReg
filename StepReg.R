@@ -306,7 +306,7 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
       prmt.all <- prmt.all[order(prmt.all[["adj.r.squared"]], decreasing = T),]
       
       # export all parameters and related model statistics to local working directory
-      write.csv(prmt.all, paste("prmt", nam, pred, "csv",sep = "."))
+      write.csv(prmt.all, paste("prmt", nam, pred, "csv",sep = "."), row.names = FALSE)
       message(paste("\nThe parameter reference: 'prmt", nam, 
                     pred, "csv' is exported!",sep = "."))
       
@@ -1043,7 +1043,7 @@ final.output <- function(resp, data, tvar, fit, prmt, aic = FALSE) {
             '.xlsx".')
     
     # prmt.csv: for convenience of importing model next time
-    write.csv(prmt, paste(aic.ind, "prmt.csv", sep = ""))
+    write.csv(prmt, paste(aic.ind, "prmt.csv", sep = ""), row.names = FALSE)
     message(paste('| The variable parameters history is exported to "',
                   paste(aic.ind, "prmt.csv", sep = ""),
                   '". ',sep=""))
@@ -1051,21 +1051,21 @@ final.output <- function(resp, data, tvar, fit, prmt, aic = FALSE) {
     
   }else{
     # 1. residuals.csv
-    write.csv(resid, paste(aic.ind, "residuals.csv", sep = ""))
+    write.csv(resid, paste(aic.ind, "residuals.csv", sep = ""), row.names = FALSE)
     message(paste('| Value of response variable, prediction and residuals are exported to',
                   paste('the file "',paste(aic.ind, "residuals.csv", sep = ""),
                         '". ', sep=""), sep="\n"))
     cat(paste(rep("-+-",20),collapse=""))
     
     # 2. prmt.csv
-    write.csv(prmt, paste(aic.ind, "prmt.csv", sep = ""))
+    write.csv(prmt, paste(aic.ind, "prmt.csv", sep = ""), row.names = FALSE)
     message(paste('Variable parameters history is exported to "',
                   paste(aic.ind, "prmt.csv", sep = ""),
                   '"',sep=""))
     cat(paste(rep("-+-",20),collapse=""))
     
     # 3. model.results.csv
-    write.csv(model, paste(aic.ind, "model.results.csv", sep = ""))
+    write.csv(model, paste(aic.ind, "model.results.csv", sep = ""), row.names = FALSE)
     message(paste('The modeling result is exported to "', 
                   paste(aic.ind, "model.results.csv", sep = ""),'".',sep=""))
     cat(paste(rep("-+-",20),collapse=""),"\n\n")
