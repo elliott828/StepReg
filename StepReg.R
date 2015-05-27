@@ -1123,27 +1123,48 @@ StepReg <- function(){
     }else if(!file.exists(data.name)){
       message('| "', data.name, '" does not exist in StepReg system work directory!')
       message('| Please re-check it in the file explorer!\n')
-    }else if(endstr == ".csv"){
-      e$data <- read.csv(data.name, stringsAsFactors = F)
-      break
-    }else{ # if(endstr %in% c("xlsx", ".xls"))
-      sht.names <- names(getSheets(loadWorkbook(data.name)))
-      repeat{
-        sht.name <- readline("| Please enter the name of the worksheet: ")
-        cat("\n")
-        if (!sht.name %in% sht.names){
-          message('| The worksheet "', sht.name, '" is not found!\n')
-        }else{
-          break
-        }
+    }else {
+      # data can be input correctly
+      if(endstr == ".csv"){
+        e$data <- read.csv(data.name, stringsAsFactors = F)
+      }else{ # if(endstr %in% c("xlsx", ".xls"))
+        sht.names <- names(getSheets(loadWorkbook(data.name)))
+          repeat{
+            sht.name <- readline("| Please enter the name of the worksheet: ")
+            cat("\n")
+            if (!sht.name %in% sht.names){
+              message('| The worksheet "', sht.name, '" is not found!\n')
+            }else{
+              break
+            }
+          }
+        e$data <- read.xlsx(data.name, sheetName = sht.name, stringsAsFactors = F)
       }
-      e$data <- read.xlsx(data.name, sheetName = sht.name, stringsAsFactors = F)
-      break
+  
+      message('| "',data.name, '" is loaded.') 
+      message('| There are ', dim(e$data)[1], ' observations and ', 
+              dim(e$data)[2], ' variables in the raw dataset.\n')
+      
+      # Check NA in the input data frame
+      check.na <- function(x)sum(is.na(x))
+      num.na <- sapply(df0, check.na)
+      if(sum(num.na)!=0){
+        message(paste('There ', if(sum(num.na!=0)==1)'is ' else 'are ',
+                      sum(num.na!=0),
+                      if(sum(num.na!=0)==1)' variable' else ' variables',
+                      ' with NAs!', sep = ""))
+        cat("\n")
+        message(paste('The', if(sum(num.na!=0)==1)' variable is: ' else ' variables are: ', sep = ""))
+        message(paste(names(which(num.na != 0)), sep = ", "))
+        cat("\n")
+      } else {
+        # Check the correlations
+        
+        
+        break
+      }
     }
   }
-  message('| "',data.name, '" is loaded.') 
-  message('| There are ', dim(e$data)[1], ' observations and ', 
-          dim(e$data)[2], ' variables in the raw dataset.\n')
     
   # STEP 1.3 
   # choose the response variable
