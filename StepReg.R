@@ -1149,14 +1149,14 @@ StepReg <- function(){
       check.na <- function(x)sum(is.na(x))
       num.na <- sapply(df0, check.na)
       if(sum(num.na)!=0){
-        message(paste('There ', if(sum(num.na!=0)==1)'is ' else 'are ',
+        message(paste('| There ', if(sum(num.na!=0)==1)'is ' else 'are ',
                       sum(num.na!=0),
                       if(sum(num.na!=0)==1)' variable' else ' variables',
                       ' with NAs!', sep = ""))
         cat("\n")
-        message(paste('The', if(sum(num.na!=0)==1)' variable is: ' else ' variables are: ', sep = ""))
-        message(paste(names(which(num.na != 0)), sep = ", "))
-        message("Please double check your raw data!\n")
+        message(paste('| The', if(sum(num.na!=0)==1)' variable is: ' else ' variables are: ', sep = ""))
+        message("| ", paste(names(which(num.na != 0)), sep = ", "), ". \n")
+        message("| Please double check your raw data!\n")
       } else {
         # Check the correlations
         
