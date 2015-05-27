@@ -1156,7 +1156,7 @@ StepReg <- function(){
         cat("\n")
         message(paste('The', if(sum(num.na!=0)==1)' variable is: ' else ' variables are: ', sep = ""))
         message(paste(names(which(num.na != 0)), sep = ", "))
-        cat("\n")
+        message("Please double check your raw data!\n")
       } else {
         # Check the correlations
         
