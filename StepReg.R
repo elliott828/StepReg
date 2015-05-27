@@ -1081,6 +1081,40 @@ final.output <- function(resp, data, tvar, fit, prmt, aic = FALSE) {
 
 #=====================================================================
 
+#-------------#
+# check.cor() #
+#-------------#
+check.cor <- function(df){
+  cor.df <- cor(df)
+  col.no <- ncol(df)
+  mat <- as.data.frame(matrix(ncol = 3))
+  colnames(mat) <- c("Var1","Var2","Correlation")
+  for (i in 2:col.no){
+    for (j in 1:(i-1)){
+      if (is.na(mat[1,1])){
+        mat[1,1] <- rownames(cor.df)[i]
+        mat[1,2] <- colnames(cor.df)[j]
+        mat[1,3] <- cor.df[i,j]
+      }else{
+        row.no <- nrow(mat)
+        mat[row.no+1, 1] <- rownames(cor.df)[i]
+        mat[row.no+1,2] <- colnames(cor.df)[j]
+        mat[row.no+1,3] <- cor.df[i,j]
+      }
+    }
+  }
+  
+  mat <- mat[order(abs(mat[,3]), decreasing =T),]
+  rownames(mat) <- NULL
+  n.cor <- if(nrow(mat)>20) 20 else nrow(mat)
+  message("| The top ", n.cor, " (absolute) correlation rates are listed below: \n")
+  print(mat[1:n.cor,])
+  write.csv(mat, "correlation_pairs.csv", row.names = F)
+  message('\n| The correlation pairs and rates are exported to "correlation_pairs.csv".\n')
+}
+
+#=====================================================================
+
 # Structure Function: StepReg()
 StepReg <- function(){
   
@@ -1147,7 +1181,7 @@ StepReg <- function(){
       
       # Check NA in the input data frame
       check.na <- function(x)sum(is.na(x))
-      num.na <- sapply(df0, check.na)
+      num.na <- sapply(e$data, check.na)
       if(sum(num.na)!=0){
         message(paste('| There ', if(sum(num.na!=0)==1)'is ' else 'are ',
                       sum(num.na!=0),
@@ -1158,9 +1192,6 @@ StepReg <- function(){
         message("| ", paste(names(which(num.na != 0)), sep = ", "), ". \n")
         message("| Please double check your raw data!\n")
       } else {
-        # Check the correlations
-        
-        
         break
       }
     }
@@ -1227,7 +1258,10 @@ StepReg <- function(){
     }    
   }
   e$df1 <- e$df0[e$st.row:nrow(e$df0), ]
-
+  
+  # Check the correlations
+  check.cor(e$data[e$st.row:nrow(e$data),-which(colnames(e$data) == e$tvar)])
+  
   # STEP 1.6 
   # rebuild the model if any model existed already
   repeat{
