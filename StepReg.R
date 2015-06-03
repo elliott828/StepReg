@@ -332,11 +332,23 @@ recom <- function(pred, resp, df, type, fit = NULL, st.row){
       if(as.character(type)=="1"){
         cat(paste(" - The recommended lamda1(S-curve) is ", best.stats[2], sep = ""),
             paste(" - The recommended lamda2(S-curve) is ", best.stats[3], sep = ""),
+            paste(" - The coefficient after transformation is ", 
+                  if (round(best.stats[4],4)==0){
+                    format(best.stats[4], scientific = T)
+                  }else{
+                    format(round(best.stats[4],4),nsmall = 4)
+                  }, sep = ""),
             sep = "\n")
         curve.prmt <- c(best.stats[1], NA, best.stats[2], best.stats[3],
                         best.stats[ncol(prmt.all)-1])
       }else if(as.character(type)=="2"){
         cat(paste(" - The recommended power rate is ", best.stats[2], sep = ""),
+            paste(" - The coefficient after transformation is ", 
+                  if (round(best.stats[3],4)==0){
+                    format(best.stats[3], scientific = T)
+                  }else{
+                    format(round(best.stats[3],4),nsmall = 4)
+                  }, sep = ""),
             sep = "\n")
         curve.prmt <- c(best.stats[1], best.stats[2], NA, NA,
                         best.stats[ncol(prmt.all)-1])
