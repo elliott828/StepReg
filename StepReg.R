@@ -6,7 +6,8 @@ all.pcg <- c("rJava", "xlsxjars", "xts", "xlsx",
              "lubridate", "ggplot2", "Rcpp", "colorspace")
 
 req.pkg <- function(pkg){
-  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  new.pkg <- pkg[(!(pkg %in% installed.packages()[, "Package"]))|
+                   (pkg %in% old.packages()[, "Package"])]
   if (length(new.pkg)) install.packages(new.pkg, dependencies = TRUE)
   sapply(pkg, require, 
          quietly = TRUE, warn.conflicts = FALSE, character.only = TRUE)
