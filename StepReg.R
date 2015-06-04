@@ -8,11 +8,11 @@ all.pcg <- c("rJava", "xlsxjars", "xts", "xlsx",
 req.pkg <- function(pkg){
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
   if (length(new.pkg)) install.packages(new.pkg, dependencies = TRUE)
-  sapply(pkg, function(x)suppressMessages(require(x, character.only = TRUE)))
+  sapply(pkg, require, 
+         quietly = TRUE, warn.conflicts = FALSE, character.only = TRUE)
 }
 
 req.pkg(all.pcg)
-# invisible(req.pkg(all.pcg))
 
 
 # STEP 0.2
