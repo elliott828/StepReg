@@ -1,4 +1,4 @@
-rm(list = ls())
+# rm(list = ls())
 # STEP 0.1
 # Download all related packages
 all.pcg <- c("rJava", "xlsxjars", "xts", "xlsx", 
@@ -1133,7 +1133,7 @@ StepReg <- function(){
   
   # STEP 0.5 
   # save original work directory for final recover
-  e$wd_recover <- getwd()
+  if("wd_recover" %in% ls(e)) setwd(e$wd_recover) else e$wd_recover <- getwd()
   
   # STEP 0.6
   # set working directory
